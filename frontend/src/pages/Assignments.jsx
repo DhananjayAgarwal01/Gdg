@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, RefreshCw, Bot, CheckCircle2 } from 'lucide-react'
 import { getAssignments, assignTask, getTasks } from '../api/api'
 
@@ -52,7 +53,11 @@ export default function Assignments() {
   const unassigned = tasks.filter(t => !t.assigned)
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="page-header">
         <h1>Smart Assignments</h1>
         <p>AI-powered volunteer-to-task matching using ML predictions</p>
@@ -61,7 +66,11 @@ export default function Assignments() {
       {msg && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
       {/* Action Panel */}
-      <div className="card" style={{ marginBottom: '2rem' }}>
+      <motion.div 
+        className="card" 
+        style={{ marginBottom: '2rem' }}
+        whileHover={{ y: -5 }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Run Assignment Engine</h2>
@@ -75,56 +84,75 @@ export default function Assignments() {
             <button className="btn btn-primary" onClick={load}>
               <RefreshCw size={15} />
             </button>
-            <button
+            <motion.button
               className="btn btn-success"
               onClick={handleAssignAll}
               disabled={assigning || unassigned.length === 0}
+              whileTap={{ scale: 0.95 }}
             >
               <Zap size={16} />
               {assigning ? 'Assigning…' : 'Assign All Unassigned'}
-            </button>
+            </motion.button>
           </div>
         </div>
 
         {/* Latest result */}
-        {result?.assignments?.length > 0 && (
-          <div style={{ marginTop: '1.5rem' }}>
-            <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Latest Assignment Results
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {result.assignments.map((a, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: '1rem',
-                  background: 'rgba(34,197,94,0.06)',
-                  border: '1px solid rgba(34,197,94,0.2)',
-                  borderRadius: 10, padding: '0.75rem 1rem', flexWrap: 'wrap',
-                }}>
-                  <CheckCircle2 size={18} color="var(--accent-green)" />
-                  <div style={{ flex: 1, minWidth: 200 }}>
-                    <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                      {a.volunteer_name}
-                    </p>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                      → <span className={`badge badge-${a.task_issue}`}>{a.task_issue}</span> task
-                    </p>
-                  </div>
-                  <div>
-                    <div className="score-bar-wrap">
-                      <div className="score-bar" style={{ width: 100 }}>
-                        <div className="score-fill" style={{ width: `${(a.score * 100).toFixed(0)}%` }} />
-                      </div>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', minWidth: 36 }}>
-                        {(a.score * 100).toFixed(0)}%
-                      </span>
+        <AnimatePresence>
+          {result?.assignments?.length > 0 && (
+            <motion.div 
+              style={{ marginTop: '1.5rem' }}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Latest Assignment Results
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {result.assignments.map((a, i) => (
+                  <motion.div 
+                    key={i} 
+                    initial={{ scale: 0.8, x: -20, opacity: 0 }}
+                    animate={{ scale: 1, x: 0, opacity: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '1rem',
+                      background: 'rgba(34,197,94,0.06)',
+                      border: '1px solid rgba(34,197,94,0.2)',
+                      borderRadius: 10, padding: '0.75rem 1rem', flexWrap: 'wrap',
+                    }}
+                  >
+                    <CheckCircle2 size={18} color="var(--accent-green)" />
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                        {a.volunteer_name}
+                      </p>
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                        → <span className={`badge badge-${a.task_issue}`}>{a.task_issue}</span> task
+                      </p>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+                    <div>
+                      <div className="score-bar-wrap">
+                        <div className="score-bar" style={{ width: 100 }}>
+                          <motion.div 
+                            className="score-fill" 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(a.score * 100).toFixed(0)}%` }}
+                            transition={{ duration: 1, delay: 0.5 + (i * 0.1) }}
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', minWidth: 36 }}>
+                          {(a.score * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* History Table */}
       <div className="card">
@@ -153,43 +181,51 @@ export default function Assignments() {
                   <th>Assigned At</th>
                 </tr>
               </thead>
-              <tbody>
-                {assignments.map(a => (
-                  <tr key={a.id}>
-                    <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                      {a.volunteer_name || <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                    </td>
-                    <td>
-                      {a.volunteer_skill
-                        ? <span className={`badge badge-${a.volunteer_skill}`}>{a.volunteer_skill}</span>
-                        : '—'}
-                    </td>
-                    <td>
-                      {a.task_issue
-                        ? <span className={`badge badge-${a.task_issue}`}>{a.task_issue}</span>
-                        : '—'}
-                    </td>
-                    <td>{a.task_severity ?? '—'}</td>
-                    <td>
-                      <div className="score-bar-wrap">
-                        <div className="score-bar" style={{ width: 80 }}>
-                          <div className="score-fill" style={{ width: `${((a.score || 0) * 100).toFixed(0)}%` }} />
+              <motion.tbody layout>
+                <AnimatePresence mode='popLayout'>
+                  {assignments.map(a => (
+                    <motion.tr 
+                      key={a.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+                        {a.volunteer_name || <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
+                      <td>
+                        {a.volunteer_skill
+                          ? <span className={`badge badge-${a.volunteer_skill}`}>{a.volunteer_skill}</span>
+                          : '—'}
+                      </td>
+                      <td>
+                        {a.task_issue
+                          ? <span className={`badge badge-${a.task_issue}`}>{a.task_issue}</span>
+                          : '—'}
+                      </td>
+                      <td>{a.task_severity ?? '—'}</td>
+                      <td>
+                        <div className="score-bar-wrap">
+                          <div className="score-bar" style={{ width: 80 }}>
+                            <div className="score-fill" style={{ width: `${((a.score || 0) * 100).toFixed(0)}%` }} />
+                          </div>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', minWidth: 36 }}>
+                            {((a.score || 0) * 100).toFixed(0)}%
+                          </span>
                         </div>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', minWidth: 36 }}>
-                          {((a.score || 0) * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                    </td>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {a.assigned_at ? new Date(a.assigned_at).toLocaleString() : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                      </td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        {a.assigned_at ? new Date(a.assigned_at).toLocaleString() : '—'}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </motion.tbody>
             </table>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

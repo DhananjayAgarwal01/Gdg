@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { PlusCircle, Trash2, RefreshCw, AlertTriangle, Wand2, Sparkles } from 'lucide-react'
 import { getTasks, addTask, deleteTask, analyzeReport } from '../api/api'
 
@@ -94,7 +95,12 @@ export default function Tasks() {
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 10 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="page-header">
         <h1>Tasks</h1>
         <p>Manage community tasks awaiting volunteer assignment</p>
@@ -104,7 +110,14 @@ export default function Tasks() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '1.5rem', marginBottom: '2rem' }}>
         {/* Smart Import */}
-        <div className="card" style={{ height: 'fit-content' }}>
+        <motion.div 
+          className="card" 
+          style={{ height: 'fit-content' }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          whileHover={{ y: -5 }}
+        >
           <div className="section-heading">
             <h2>AI Smart Import</h2>
             <Sparkles size={18} style={{ color: 'var(--accent-purple)' }} />
@@ -135,10 +148,16 @@ export default function Tasks() {
               <><Wand2 size={16} /> Magic Fill</>
             )}
           </button>
-        </div>
+        </motion.div>
 
         {/* Add Form */}
-        <div className="card">
+        <motion.div 
+          className="card"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          whileHover={{ y: -5 }}
+        >
           <div className="section-heading">
             <h2>Add Task</h2>
             <PlusCircle size={18} style={{ color: 'var(--brand-light)' }} />
@@ -179,7 +198,7 @@ export default function Tasks() {
               </button>
             </div>
           </form>
-        </div>
+        </motion.div>
       </div>
 
       {/* Table */}
@@ -213,50 +232,59 @@ export default function Tasks() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
-                {tasks.map(t => {
-                  const urgency = t.severity * t.people_affected
-                  return (
-                    <tr key={t.id}>
-                      <td><span className={`badge badge-${t.issue_type}`}>{t.issue_type}</span></td>
-                      <td>{parseFloat(t.latitude).toFixed(3)}, {parseFloat(t.longitude).toFixed(3)}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                          {Array.from({ length: 10 }).map((_, i) => (
-                            <div key={i} style={{
-                              width: 7, height: 7, borderRadius: 2,
-                              background: i < t.severity
-                                ? (t.severity >= 7 ? 'var(--accent-red)' : t.severity >= 4 ? 'var(--accent-yellow)' : 'var(--accent-green)')
-                                : 'var(--border)',
-                            }} />
-                          ))}
-                        </div>
-                      </td>
-                      <td>{t.people_affected.toLocaleString()}</td>
-                      <td>
-                        <span className={urgencyClass(t.severity, t.people_affected)}>
-                          {urgency >= 1000 ? '🔴' : urgency >= 300 ? '🟡' : '🟢'} {urgency.toLocaleString()}
-                        </span>
-                      </td>
-                      <td>{t.date}</td>
-                      <td>
-                        <span className={`badge ${t.assigned ? 'badge-assigned' : 'badge-pending'}`}>
-                          {t.assigned ? 'Assigned' : 'Pending'}
-                        </span>
-                      </td>
-                      <td>
-                        <button className="btn btn-danger" style={{ padding: '4px 8px' }} onClick={() => handleDelete(t.id)}>
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
+              <motion.tbody layout>
+                <AnimatePresence mode='popLayout'>
+                  {tasks.map(t => {
+                    const urgency = t.severity * t.people_affected
+                    return (
+                      <motion.tr 
+                        key={t.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, x: -30 }}
+                        transition={{ spring: { damping: 20, stiffness: 300 } }}
+                      >
+                        <td><span className={`badge badge-${t.issue_type}`}>{t.issue_type}</span></td>
+                        <td>{parseFloat(t.latitude).toFixed(3)}, {parseFloat(t.longitude).toFixed(3)}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                            {Array.from({ length: 10 }).map((_, i) => (
+                              <div key={i} style={{
+                                width: 7, height: 7, borderRadius: 2,
+                                background: i < t.severity
+                                  ? (t.severity >= 7 ? 'var(--accent-red)' : t.severity >= 4 ? 'var(--accent-yellow)' : 'var(--accent-green)')
+                                  : 'var(--border)',
+                              }} />
+                            ))}
+                          </div>
+                        </td>
+                        <td>{t.people_affected.toLocaleString()}</td>
+                        <td>
+                          <span className={urgencyClass(t.severity, t.people_affected)}>
+                            {urgency >= 1000 ? '🔴' : urgency >= 300 ? '🟡' : '🟢'} {urgency.toLocaleString()}
+                          </span>
+                        </td>
+                        <td>{t.date}</td>
+                        <td>
+                          <span className={`badge ${t.assigned ? 'badge-assigned' : 'badge-pending'}`}>
+                            {t.assigned ? 'Assigned' : 'Pending'}
+                          </span>
+                        </td>
+                        <td>
+                          <button className="btn btn-danger" style={{ padding: '4px 8px' }} onClick={() => handleDelete(t.id)}>
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </motion.tr>
+                    )
+                  })}
+                </AnimatePresence>
+              </motion.tbody>
             </table>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

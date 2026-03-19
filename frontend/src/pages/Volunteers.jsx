@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { UserPlus, Trash2, RefreshCw } from 'lucide-react'
 import { getVolunteers, addVolunteer, deleteVolunteer } from '../api/api'
 
@@ -71,7 +72,11 @@ export default function Volunteers() {
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="page-header">
         <h1>Volunteers</h1>
         <p>Manage registered volunteers and their skills</p>
@@ -80,7 +85,13 @@ export default function Volunteers() {
       {msg && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
       {/* Add Form */}
-      <div className="card" style={{ marginBottom: '2rem' }}>
+      <motion.div 
+        className="card" 
+        style={{ marginBottom: '2rem' }}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -5 }}
+      >
         <div className="section-heading">
           <h2>Add Volunteer</h2>
           <UserPlus size={18} style={{ color: 'var(--brand-light)' }} />
@@ -124,7 +135,7 @@ export default function Volunteers() {
             </button>
           </div>
         </form>
-      </div>
+      </motion.div>
 
       {/* Table */}
       <div className="card">
@@ -154,44 +165,59 @@ export default function Volunteers() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
-                {vols.map(v => (
-                  <tr key={v.id}>
-                    <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{v.name}</td>
-                    <td>{skillBadge(v.skill)}</td>
-                    <td>{parseFloat(v.latitude).toFixed(3)}, {parseFloat(v.longitude).toFixed(3)}</td>
-                    <td>
-                      <span className={`badge ${v.availability ? 'badge-assigned' : 'badge-pending'}`}>
-                        {v.availability ? 'Available' : 'Unavailable'}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{
-                          display: 'flex', gap: 3,
-                        }}>
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} style={{
-                              width: 8, height: 8, borderRadius: '50%',
-                              background: i < v.experience ? 'var(--brand)' : 'var(--border)',
-                            }} />
-                          ))}
+              <motion.tbody layout>
+                <AnimatePresence mode='popLayout'>
+                  {vols.map(v => (
+                    <motion.tr 
+                      key={v.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{v.name}</td>
+                      <td>{skillBadge(v.skill)}</td>
+                      <td>{parseFloat(v.latitude).toFixed(3)}, {parseFloat(v.longitude).toFixed(3)}</td>
+                      <td>
+                        <span className={`badge ${v.availability ? 'badge-assigned' : 'badge-pending'}`}>
+                          {v.availability ? 'Available' : 'Unavailable'}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{
+                            display: 'flex', gap: 3,
+                          }}>
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <motion.div 
+                                key={i} 
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.3 + (i * 0.05) }}
+                                style={{
+                                  width: 8, height: 8, borderRadius: '50%',
+                                  background: i < v.experience ? 'var(--brand)' : 'var(--border)',
+                                }} 
+                              />
+                            ))}
+                          </div>
+                          <span style={{ fontSize: '0.8rem' }}>{v.experience}/5</span>
                         </div>
-                        <span style={{ fontSize: '0.8rem' }}>{v.experience}/5</span>
-                      </div>
-                    </td>
-                    <td>
-                      <button className="btn btn-danger" style={{ padding: '4px 8px' }} onClick={() => handleDelete(v.id)}>
-                        <Trash2 size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                      </td>
+                      <td>
+                        <button className="btn btn-danger" style={{ padding: '4px 8px' }} onClick={() => handleDelete(v.id)}>
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </motion.tbody>
             </table>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

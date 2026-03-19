@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Users, ClipboardList, CheckCircle2, AlertTriangle, TrendingUp, Zap } from 'lucide-react'
 import { getStats } from '../api/api'
 import {
@@ -88,16 +89,39 @@ export default function Dashboard() {
   ]
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="page-header">
         <h1>Dashboard</h1>
         <p>Real-time overview of volunteer coordination</p>
       </div>
 
       {/* Stat Cards */}
-      <div className="stat-grid">
+      <motion.div 
+        className="stat-grid"
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+          }
+        }}
+        initial="hidden"
+        animate="show"
+      >
         {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-          <div className="stat-card" key={label}>
+          <motion.div 
+            className="stat-card" 
+            key={label}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              show: { opacity: 1, y: 0 }
+            }}
+            whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.2 } }}
+          >
             <div className="stat-icon" style={{ background: bg }}>
               <Icon size={22} color={color} />
             </div>
@@ -105,9 +129,9 @@ export default function Dashboard() {
               <h3>{label}</h3>
               <div className="stat-value">{value}</div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Model Banner */}
       {stats.model?.model_name && (
@@ -123,7 +147,12 @@ export default function Dashboard() {
 
       {/* Charts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', flexWrap: 'wrap' }}>
-        <div className="card">
+        <motion.div 
+          className="card"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+        >
           <div className="section-heading">
             <h2>Overview</h2>
             <TrendingUp size={18} style={{ color: 'var(--brand-light)' }} />
@@ -140,9 +169,14 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="card">
+        <motion.div 
+          className="card"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+        >
           <div className="section-heading">
             <h2>Task Assignment</h2>
           </div>
@@ -167,8 +201,8 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
