@@ -1,0 +1,12 @@
+{
+  "model_name": "Random Forest",
+  "accuracy": 0.952,
+  "f1_score": 0.929551,
+  "features": [
+    "skill_match",
+    "distance_km",
+    "availability_match",
+    "experience",
+    "urgency"
+  ]
+}
