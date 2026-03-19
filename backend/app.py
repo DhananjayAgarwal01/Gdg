@@ -17,6 +17,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from scipy.optimize import linear_sum_assignment
+import google.generativeai as genai
 
 load_dotenv()
 
@@ -186,6 +187,66 @@ def delete_task(tid):
     if r.deleted_count == 0:
         return jsonify({"error": "Not found"}), 404
     return jsonify({"deleted": tid})
+
+
+# ─── Gemini AI Utility ────────────────────────────────────────────────────────
+def analyze_with_gemini(text):
+    """
+    Uses Gemini to extract structured task data from raw text.
+    Returns (structured_dict, error_message).
+    """
+    key = os.getenv("GEMINI_API_KEY")
+    if not key or key == "your_gemini_api_key_here":
+        return None, "GEMINI_API_KEY is missing or is still the placeholder."
+    
+    try:
+        genai.configure(api_key=key)
+        # Using the exact identifier from list_models output
+        model_ai = genai.GenerativeModel('gemini-flash-latest')
+        
+        prompt = f"""
+        Extract structured emergency task data from this NGO situation report.
+        Return ONLY valid JSON. Nothing else.
+        
+        Fields to extract:
+        - issue_type: one of ["medical", "food", "education", "rescue"]
+        - latitude: float (best guess from context if mentioned)
+        - longitude: float (best guess from context if mentioned)
+        - severity: integer 1-10
+        - people_affected: integer
+        - date: string "YYYY-MM-DD" (use 2026-03-19 if not mentioned)
+        
+        If location coordinates are not in the text, but a specific city/place in India is, 
+        provide its approximate coordinates.
+        
+        Report: {text}
+        """
+        
+        response = model_ai.generate_content(prompt)
+        if not response or not response.text:
+            return None, "Gemini returned an empty response. Check your API quota/key."
+            
+        # Clean response text in case it has markdown code blocks
+        clean_text = response.text.strip().replace("```json", "").replace("```", "")
+        return json.loads(clean_text), None
+    except Exception as e:
+        err_msg = str(e)
+        print(f"Gemini Error: {err_msg}")
+        return None, err_msg
+
+
+@app.post("/analyze-report")
+def analyze_report_route():
+    data = request.get_json(force=True)
+    text = data.get("text")
+    if not text:
+        return bad_req("No report text provided")
+    
+    structured, error = analyze_with_gemini(text)
+    if error:
+        return jsonify({"error": f"AI analysis failed: {error}"}), 500
+        
+    return jsonify(structured)
 
 
 # ─── Smart Assignment ─────────────────────────────────────────────────────────

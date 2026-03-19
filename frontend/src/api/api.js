@@ -11,9 +11,10 @@ export const addVolunteer    = (data)   => api.post('/volunteer', data).then(r =
 export const deleteVolunteer = (id)     => api.delete(`/volunteer/${id}`).then(r => r.data)
 
 // ── Tasks ───────────────────────────────────────────────────────────────────
-export const getTasks   = ()     => api.get('/tasks').then(r => r.data)
-export const addTask    = (data) => api.post('/task', data).then(r => r.data)
-export const deleteTask = (id)   => api.delete(`/task/${id}`).then(r => r.data)
+export const getTasks       = ()     => api.get('/tasks').then(r => r.data)
+export const addTask        = (data) => api.post('/task', data).then(r => r.data)
+export const deleteTask     = (id)   => api.delete(`/task/${id}`).then(r => r.data)
+export const analyzeReport  = (text) => api.post('/analyze-report', { text }).then(r => r.data)
 
 // ── Assignments ─────────────────────────────────────────────────────────────
 export const getAssignments   = ()           => api.get('/assignments').then(r => r.data)
